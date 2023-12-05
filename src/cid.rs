@@ -16,7 +16,7 @@ pub type LegacyEncodedCid = BaseEncoded<Cid, Base58Encoder>;
 pub type EncodedCid = BaseEncoded<Cid>;
 
 /// implementation of cid
-#[derive(Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Default, Eq, Ord, PartialOrd, PartialEq)]
 pub struct Cid {
     /// the version of the Cid
     pub(crate) codec: Codec,
