@@ -47,9 +47,9 @@ impl<'de> Deserialize<'de> for Cid {
                             if codec.is_some() {
                                 return Err(Error::duplicate_field("version"));
                             }
-                            let s: &str = map.next_value()?;
+                            let v: u64 = map.next_value()?;
                             codec = Some(
-                                Codec::try_from(s)
+                                Codec::try_from(v)
                                     .map_err(|_| Error::custom("invalid cid version"))?,
                             );
                         }

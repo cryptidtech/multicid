@@ -12,7 +12,7 @@ impl ser::Serialize for Cid {
     {
         if serializer.is_human_readable() {
             let mut ss = serializer.serialize_struct("cid", 3)?;
-            ss.serialize_field("version", &self.codec)?;
+            ss.serialize_field("version", &self.codec.code())?;
             ss.serialize_field("encoding", &self.target_codec)?;
             if self.codec() == Codec::Identity {
                 ss.serialize_field(

@@ -4,7 +4,7 @@ mod ser;
 
 #[cfg(test)]
 mod tests {
-    use crate::{cid, vlad, Vlad};
+    use crate::{cid, vlad};
     use multicodec::Codec;
     use multihash::mh;
     use multikey::nonce;
@@ -81,7 +81,7 @@ mod tests {
                     len: 3,
                 },
                 Token::BorrowedStr("version"),
-                Token::BorrowedStr("identity"),
+                Token::U64(0),
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("dag-pb"),
                 Token::BorrowedStr("hash"),
@@ -89,6 +89,41 @@ mod tests {
                 Token::StructEnd,
             ],
         );
+    }
+
+    #[test]
+    fn test_cidv0_serde_json() {
+        let v0 = cid::Builder::default()
+            .with_hash(
+                &mh::Builder::new_from_bytes(Codec::Sha2256, b"for great justice, move every zig!")
+                    .unwrap()
+                    .try_build()
+                    .unwrap(),
+            )
+            .try_build()
+            .unwrap();
+
+        let s = serde_json::to_string(&v0).unwrap();
+        assert_eq!(s, "{\"version\":0,\"encoding\":\"dag-pb\",\"hash\":\"Qmdb16CztyugMSs5anEPrJ6bLeo39bTGcM13zNPqjqUidT\"}");
+        assert_eq!(v0, serde_json::from_str(&s).unwrap());
+    }
+
+    #[test]
+    fn test_cidv0_serde_cbor() {
+        let v0 = cid::Builder::default()
+            .with_hash(
+                &mh::Builder::new_from_bytes(Codec::Sha2256, b"for great justice, move every zig!")
+                    .unwrap()
+                    .try_build()
+                    .unwrap(),
+            )
+            .try_build()
+            .unwrap();
+
+        let v = serde_cbor::to_vec(&v0).unwrap();
+        //println!("{}", hex::encode(&v));
+        assert_eq!(v, hex::decode("83410041708341314112582120e28c7aeb3a876b25ed822472e47a696fe25214c1672f0972195f9b64eea41e7e").unwrap());
+        assert_eq!(v0, serde_cbor::from_slice(&v).unwrap());
     }
 
     #[test]
@@ -167,7 +202,7 @@ mod tests {
                     len: 3,
                 },
                 Token::BorrowedStr("version"),
-                Token::BorrowedStr("cidv1"),
+                Token::U64(1),
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("dag-cbor"),
                 Token::BorrowedStr("hash"),
@@ -310,7 +345,7 @@ mod tests {
                     len: 3,
                 },
                 Token::BorrowedStr("version"),
-                Token::BorrowedStr("cidv1"),
+                Token::U64(1),
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("dag-cbor"),
                 Token::BorrowedStr("hash"),
@@ -346,9 +381,8 @@ mod tests {
             .unwrap();
 
         let s = serde_json::to_string(&vlad).unwrap();
-        assert_eq!(s, "{\"nonce\":{\"nonce\":\"f20d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832\"},\"cid\":{\"version\":\"cidv1\",\"encoding\":\"dag-cbor\",\"hash\":\"z8tVp1WM84GvufkEFRWou2NMv87nvNd8hqvDGeoD2Y4y1qiQYXDyAQqKQbb5KnJBignW6W8JHaWHKnSTuN95XoZgddo\"}}");
-        let vlad2: Vlad = serde_json::from_str(&s).unwrap();
-        assert_eq!(vlad, vlad2);
+        assert_eq!(s, "{\"nonce\":{\"nonce\":\"f20d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832\"},\"cid\":{\"version\":1,\"encoding\":\"dag-cbor\",\"hash\":\"z8tVp1WM84GvufkEFRWou2NMv87nvNd8hqvDGeoD2Y4y1qiQYXDyAQqKQbb5KnJBignW6W8JHaWHKnSTuN95XoZgddo\"}}");
+        assert_eq!(vlad, serde_json::from_str(&s).unwrap());
     }
 
     #[test]
@@ -377,7 +411,6 @@ mod tests {
 
         let v = serde_cbor::to_vec(&vlad).unwrap();
         assert_eq!(v, hex::decode("83410782413b582120d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832834101417183413141145841405792dad96085b6076b8e4e63b578c90d0336bcaadef4f24704df866149526a1e6d23f89e218ad3f6172a7e26e6e37a3dea728e5f232e41696ad286bcca9201be").unwrap());
-        let vlad2: Vlad = serde_cbor::from_slice(&v).unwrap();
-        assert_eq!(vlad, vlad2);
+        assert_eq!(vlad, serde_cbor::from_slice(&v).unwrap());
     }
 }
