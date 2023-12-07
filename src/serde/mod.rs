@@ -293,7 +293,7 @@ mod tests {
 
         assert_tokens(
             &vlad.readable(),
-            &[Token::BorrowedStr("f073b20d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832017114405792dad96085b6076b8e4e63b578c90d0336bcaadef4f24704df866149526a1e6d23f89e218ad3f6172a7e26e6e37a3dea728e5f232e41696ad286bcca9201be")
+            &[Token::BorrowedStr("ba45sbuk4j6zjcgxbgn7rak6k6taardjwgrnyrmsds2higtc77ilza6bsafyriqcxslnnsyefwydwxdsomo2xrsinam3lzkw66tzeobg7qzqusutkdzwsh6e6egfnh5qxfj7cnzxdpi66u4uol4rs4qljnljinpgksia34"),
             ],
         );
     }

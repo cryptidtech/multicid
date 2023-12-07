@@ -52,7 +52,7 @@ impl CodecInfo for Vlad {
 
 impl EncodingInfo for Vlad {
     fn preferred_encoding() -> Base {
-        Base::Base16Lower
+        Base::Base32Lower
     }
 
     fn encoding(&self) -> Base {
