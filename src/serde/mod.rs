@@ -206,7 +206,7 @@ mod tests {
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("dag-cbor"),
                 Token::BorrowedStr("hash"),
-                Token::BorrowedStr("z8tVp1WM84GvufkEFRWou2NMv87nvNd8hqvDGeoD2Y4y1qiQYXDyAQqKQbb5KnJBignW6W8JHaWHKnSTuN95XoZgddo"),
+                Token::BorrowedStr("bcrafpew23fqilnqhnohe4y5vpdeq2azwxsvn55hsi4cn7btbjfjguhtnep4j4imk2p3bokt6e3tog6r55jzi4xzdfzaws2wsq26mveqbxy"),
                 Token::StructEnd,
             ],
         );
@@ -349,7 +349,7 @@ mod tests {
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("dag-cbor"),
                 Token::BorrowedStr("hash"),
-                Token::BorrowedStr("z8tVp1WM84GvufkEFRWou2NMv87nvNd8hqvDGeoD2Y4y1qiQYXDyAQqKQbb5KnJBignW6W8JHaWHKnSTuN95XoZgddo"),
+                Token::BorrowedStr("bcrafpew23fqilnqhnohe4y5vpdeq2azwxsvn55hsi4cn7btbjfjguhtnep4j4imk2p3bokt6e3tog6r55jzi4xzdfzaws2wsq26mveqbxy"),
                 Token::StructEnd,
                 Token::StructEnd,
             ],
@@ -381,7 +381,7 @@ mod tests {
             .unwrap();
 
         let s = serde_json::to_string(&vlad).unwrap();
-        assert_eq!(s, "{\"nonce\":{\"nonce\":\"f20d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832\"},\"cid\":{\"version\":1,\"encoding\":\"dag-cbor\",\"hash\":\"z8tVp1WM84GvufkEFRWou2NMv87nvNd8hqvDGeoD2Y4y1qiQYXDyAQqKQbb5KnJBignW6W8JHaWHKnSTuN95XoZgddo\"}}");
+        assert_eq!(s, "{\"nonce\":{\"nonce\":\"f20d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832\"},\"cid\":{\"version\":1,\"encoding\":\"dag-cbor\",\"hash\":\"bcrafpew23fqilnqhnohe4y5vpdeq2azwxsvn55hsi4cn7btbjfjguhtnep4j4imk2p3bokt6e3tog6r55jzi4xzdfzaws2wsq26mveqbxy\"}}");
         assert_eq!(vlad, serde_json::from_str(&s).unwrap());
     }
 

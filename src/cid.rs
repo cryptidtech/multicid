@@ -44,7 +44,13 @@ impl EncodingInfo for Cid {
     }
 
     fn encoding(&self) -> Base {
-        Self::preferred_encoding()
+        if self.codec() == Codec::Identity {
+            // v0 Cids like Base58Btc
+            Self::preferred_encoding()
+        } else {
+            // all others like Base32Lower
+            Base::Base32Lower
+        }
     }
 }
 
