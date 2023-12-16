@@ -2,7 +2,8 @@ use crate::{error::VladError, Cid, Error};
 use core::fmt;
 use multibase::Base;
 use multicodec::Codec;
-use multikey::Nonce;
+use multikey::{nonce, KeyViews, Multikey, Nonce};
+use multisig::Multisig;
 use multitrait::TryDecodeFrom;
 use multiutil::{BaseEncoded, CodecInfo, EncodingInfo};
 
@@ -36,6 +37,17 @@ pub struct Vlad {
     pub(crate) nonce: Nonce,
     /// validation function content address
     pub(crate) cid: Cid,
+}
+
+impl Vlad {
+    /// verify a Vlad whose nonce is a digital signature over the Cid
+    pub fn verify(&self, mk: &Multikey) -> Result<(), Error> {
+        let vv = mk.verify_view()?;
+        let cidv: Vec<u8> = self.cid.clone().into();
+        let ms = Multisig::try_from(self.nonce.as_ref())?;
+        vv.borrow().verify(&ms, Some(&cidv))?;
+        Ok(())
+    }
 }
 
 impl CodecInfo for Vlad {
@@ -109,6 +121,7 @@ impl fmt::Debug for Vlad {
 #[derive(Clone, Debug, Default)]
 pub struct Builder {
     nonce: Option<Nonce>,
+    mk: Option<Multikey>,
     cid: Option<Cid>,
     base_encoding: Option<Base>,
 }
@@ -123,6 +136,12 @@ impl Builder {
     /// set cid
     pub fn with_cid(mut self, cid: &Cid) -> Self {
         self.cid = Some(cid.clone());
+        self
+    }
+
+    /// set the signing key to generate a signature nonce
+    pub fn with_signing_key(mut self, mk: &Multikey) -> Self {
+        self.mk = Some(mk.clone());
         self
     }
 
@@ -143,10 +162,24 @@ impl Builder {
 
     /// build the vlad
     pub fn try_build(&self) -> Result<Vlad, Error> {
-        Ok(Vlad {
-            nonce: self.nonce.clone().ok_or(VladError::MissingNonce)?,
-            cid: self.cid.clone().ok_or(VladError::MissingCid)?,
-        })
+        let cid = self.cid.clone().ok_or(VladError::MissingCid)?;
+        match &self.nonce {
+            Some(nonce) => Ok(Vlad {
+                nonce: nonce.clone(),
+                cid,
+            }),
+            None => match &self.mk {
+                Some(mk) => {
+                    let sv = mk.sign_view()?;
+                    let cidv: Vec<u8> = cid.clone().into();
+                    let ms = sv.borrow().sign(&cidv, false)?;
+                    let msv: Vec<u8> = ms.clone().into();
+                    let nonce = nonce::Builder::new_from_bytes(&msv).try_build()?;
+                    Ok(Vlad { nonce, cid })
+                }
+                None => Err(VladError::MissingNonce.into()),
+            },
+        }
     }
 }
 
@@ -155,7 +188,7 @@ mod tests {
     use super::*;
     use crate::cid;
     use multihash::mh;
-    use multikey::nonce;
+    use multikey::{nonce, EncodedMultikey};
 
     #[test]
     fn test_default() {
@@ -213,6 +246,7 @@ mod tests {
             .unwrap();
 
         let v: Vec<u8> = vlad.clone().into();
+        println!("byte len: {}", v.len());
         assert_eq!(vlad, Vlad::try_from(v.as_ref()).unwrap());
     }
 
@@ -243,6 +277,41 @@ mod tests {
             .unwrap();
 
         let s = vlad.to_string();
+        println!("({}) {}", s.len(), s);
         assert_eq!(vlad, EncodedVlad::try_from(s.as_str()).unwrap());
+    }
+
+    #[test]
+    fn test_signed_vlad() {
+        // build a cid
+        let cid = cid::Builder::new(Codec::Cidv1)
+            .with_target_codec(Codec::DagCbor)
+            .with_hash(
+                &mh::Builder::new_from_bytes(Codec::Sha3512, b"for great justice, move every zig!")
+                    .unwrap()
+                    .try_build()
+                    .unwrap(),
+            )
+            .try_build()
+            .unwrap();
+
+        let s = "zF3WX3Dwnv7jv2nPfYL6e2XaLdNyaiwkPyzEtgw65d872KYG22jezzuYPtrds8WSJ3Sv8SCA";
+        let mk = EncodedMultikey::try_from(s).unwrap();
+
+        let vlad = Builder::default()
+            .with_signing_key(&mk)
+            .with_cid(&cid)
+            .try_build_encoded()
+            .unwrap();
+
+        // make sure the signature checks out
+        assert_eq!((), vlad.verify(&mk).unwrap());
+        let s = vlad.to_string();
+        println!("({}) {}", s.len(), s);
+        assert_eq!(vlad, EncodedVlad::try_from(s.as_str()).unwrap());
+        let vlad = vlad.to_inner();
+        let v: Vec<u8> = vlad.clone().into();
+        println!("signed len: {}", v.len());
+        assert_eq!(vlad, Vlad::try_from(v.as_ref()).unwrap());
     }
 }

@@ -11,6 +11,9 @@ pub enum Error {
     /// A mulikey error
     #[error(transparent)]
     Multikey(#[from] multikey::Error),
+    /// A multisig error
+    #[error(transparent)]
+    Multisig(#[from] multisig::Error),
     /// Cid error
     #[error(transparent)]
     Cid(#[from] CidError),
