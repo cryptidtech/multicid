@@ -45,7 +45,7 @@ impl Vlad {
         let vv = mk.verify_view()?;
         let cidv: Vec<u8> = self.cid.clone().into();
         let ms = Multisig::try_from(self.nonce.as_ref())?;
-        vv.borrow().verify(&ms, Some(&cidv))?;
+        vv.verify(&ms, Some(&cidv))?;
         Ok(())
     }
 }
@@ -172,7 +172,7 @@ impl Builder {
                 Some(mk) => {
                     let sv = mk.sign_view()?;
                     let cidv: Vec<u8> = cid.clone().into();
-                    let ms = sv.borrow().sign(&cidv, false)?;
+                    let ms = sv.sign(&cidv, false, None)?;
                     let msv: Vec<u8> = ms.clone().into();
                     let nonce = nonce::Builder::new_from_bytes(&msv).try_build()?;
                     Ok(Vlad { nonce, cid })
