@@ -3,6 +3,8 @@ use core::fmt;
 use multicodec::Codec;
 use multihash::{EncodedMultihash, Multihash};
 use multikey::Nonce;
+#[cfg(feature = "dag_cbor")]
+use multitrait::TryDecodeFrom;
 use multiutil::{Base58Encoder, BaseEncoded};
 use serde::{
     de::{Error, MapAccess, Visitor},
@@ -98,22 +100,57 @@ impl<'de> Deserialize<'de> for Cid {
         if deserializer.is_human_readable() {
             deserializer.deserialize_struct("cid", FIELDS, CidVisitor)
         } else {
-            let (codec, target_codec, hash): (Codec, Codec, Multihash) =
-                Deserialize::deserialize(deserializer)?;
-
-            if codec != Codec::Identity
-                && codec != Codec::Cidv1
-                && codec != Codec::Cidv2
-                && codec != Codec::Cidv3
+            #[cfg(feature = "dag_cbor")]
             {
-                return Err(Error::custom("deserialized sigil is not a Cid sigil"));
+                let tagged: serde_cbor::tags::Tagged<&'de [u8]> =
+                    Deserialize::deserialize(deserializer)?;
+                if tagged.tag != Some(42_u64) {
+                    return Err(Error::custom("improperly tagged DAG-CBOR CID"));
+                }
+                let (identity, ptr) = Codec::try_decode_from(tagged.value)
+                    .map_err(|e| Error::custom(e.to_string()))?;
+                if identity != Codec::Identity {
+                    return Err(Error::custom(
+                        "improperly encoded DAG-CBOR CID; missing leading Identity codec",
+                    ));
+                }
+                let (cid, _) =
+                    Self::try_decode_from(ptr).map_err(|e| Error::custom(e.to_string()))?;
+
+                if cid.codec != Codec::Identity
+                    && cid.codec != Codec::Cidv1
+                    && cid.codec != Codec::Cidv2
+                    && cid.codec != Codec::Cidv3
+                {
+                    return Err(Error::custom("deserialized sigil is not a Cid sigil"));
+                }
+
+                Ok(cid)
             }
 
-            Ok(Self {
-                codec,
-                target_codec,
-                hash,
-            })
+            #[cfg(not(feature = "dag_cbor"))]
+            {
+                let b: &'de [u8] = Deserialize::deserialize(deserializer)?;
+                Ok(Self::try_from(b).map_err(|e| Error::custom(e.to_string()))?)
+                /*
+                let (codec, target_codec, hash): (Codec, Codec, Multihash) =
+                    Deserialize::deserialize(deserializer)?;
+
+                if codec != Codec::Identity
+                    && codec != Codec::Cidv1
+                    && codec != Codec::Cidv2
+                    && codec != Codec::Cidv3
+                {
+                    return Err(Error::custom("deserialized sigil is not a Cid sigil"));
+                }
+
+                Ok(Self {
+                    codec,
+                    target_codec,
+                    hash,
+                })
+                */
+            }
         }
     }
 }

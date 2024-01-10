@@ -14,7 +14,7 @@ identifiers in distributed systems by combinind a random nonce (i.e. number
 used once) and a CID for a WASM verification script designed to run in a
 [WACC](https://github.com/cryptidtech/wacc.git) compliant virtual machine. The 
 nonce in the Vlad can be random but in some use cases the bytes inside the 
-nonce are a [multisig](https://github.com/multisig/multisig) digital signature
+nonce are a [multisig](https://github.com/cryptidtech/multisig) digital signature
 over the CID part of the Vlad. Digital signatures are random enough to serve 
 the purposes of making the vlad unique while also cryptographically linking the
 Vlad to the person who controls the key pair used to create the Vlad.

@@ -246,7 +246,7 @@ mod tests {
             .unwrap();
 
         let v: Vec<u8> = vlad.clone().into();
-        println!("byte len: {}", v.len());
+        //println!("byte len: {}", v.len());
         assert_eq!(vlad, Vlad::try_from(v.as_ref()).unwrap());
     }
 
@@ -277,7 +277,7 @@ mod tests {
             .unwrap();
 
         let s = vlad.to_string();
-        println!("({}) {}", s.len(), s);
+        //println!("({}) {}", s.len(), s);
         assert_eq!(vlad, EncodedVlad::try_from(s.as_str()).unwrap());
     }
 
