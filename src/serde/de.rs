@@ -132,24 +132,6 @@ impl<'de> Deserialize<'de> for Cid {
             {
                 let b: &'de [u8] = Deserialize::deserialize(deserializer)?;
                 Ok(Self::try_from(b).map_err(|e| Error::custom(e.to_string()))?)
-                /*
-                let (codec, target_codec, hash): (Codec, Codec, Multihash) =
-                    Deserialize::deserialize(deserializer)?;
-
-                if codec != Codec::Identity
-                    && codec != Codec::Cidv1
-                    && codec != Codec::Cidv2
-                    && codec != Codec::Cidv3
-                {
-                    return Err(Error::custom("deserialized sigil is not a Cid sigil"));
-                }
-
-                Ok(Self {
-                    codec,
-                    target_codec,
-                    hash,
-                })
-                */
             }
         }
     }

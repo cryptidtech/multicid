@@ -307,11 +307,11 @@ mod tests {
         // make sure the signature checks out
         assert_eq!((), vlad.verify(&mk).unwrap());
         let s = vlad.to_string();
-        println!("({}) {}", s.len(), s);
+        //println!("({}) {}", s.len(), s);
         assert_eq!(vlad, EncodedVlad::try_from(s.as_str()).unwrap());
         let vlad = vlad.to_inner();
         let v: Vec<u8> = vlad.clone().into();
-        println!("signed len: {}", v.len());
+        //println!("signed len: {}", v.len());
         assert_eq!(vlad, Vlad::try_from(v.as_ref()).unwrap());
     }
 }

@@ -77,6 +77,7 @@ mod tests {
         assert_eq!(v0, serde_json::from_str(&s).unwrap());
     }
 
+    #[cfg(not(feature = "dag_cbor"))]
     #[test]
     fn test_cidv0_serde_cbor() {
         let v0 = cid::Builder::default()
@@ -176,6 +177,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(feature = "dag_cbor"))]
     #[test]
     fn test_cidv1_serde_cbor() {
         let v1 = cid::Builder::new(Codec::Cidv1)
@@ -339,6 +341,7 @@ mod tests {
         assert_eq!(vlad, serde_json::from_str(&s).unwrap());
     }
 
+    #[cfg(not(feature = "dag_cbor"))]
     #[test]
     fn test_vlad_serde_cbor() {
         let bytes = hex::decode("d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832")

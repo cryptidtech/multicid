@@ -51,7 +51,6 @@ impl ser::Serialize for Cid {
             {
                 let v: Vec<u8> = self.clone().into();
                 serializer.serialize_bytes(v.as_slice())
-                //(self.codec, self.target_codec, self.hash.clone()).serialize(serializer)
             }
         }
     }
