@@ -1,6 +1,6 @@
 [package]
 name = "multicid"
-version = "0.1.11"
+version = "0.1.12"
 edition = "2021"
 authors = ["Dave Huseby <dwh@linuxprogrammer.org>"]
 description = "Multicodec compatible content identifier implementation"
@@ -16,8 +16,8 @@ dag_cbor = ["serde_cbor", "serde_cbor/tags"]
 multibase = "0.9"
 multicodec = { version = "0.3", git = "https://github.com/cryptidtech/rust-multicodec.git" }
 multihash = { version = "0.2", git = "https://github.com/cryptidtech/multihash.git" }
-multikey = { version = "0.7", git = "https://github.com/cryptidtech/multikey.git" }
-multisig = { version = "0.2", git = "https://github.com/cryptidtech/multisig.git" }
+multikey = { version = "0.8", git = "https://github.com/cryptidtech/multikey.git" }
+multisig = { version = "0.3", git = "https://github.com/cryptidtech/multisig.git" }
 multitrait = { version = "0.1", git = "https://github.com/cryptidtech/multitrait.git" }
 multiutil = { version = "0.2", git = "https://github.com/cryptidtech/multiutil.git" }
 rand = "0.8"
