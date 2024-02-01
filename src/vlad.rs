@@ -2,7 +2,7 @@ use crate::{error::VladError, Cid, Error};
 use core::fmt;
 use multibase::Base;
 use multicodec::Codec;
-use multikey::{nonce, KeyViews, Multikey, Nonce};
+use multikey::{nonce, Multikey, Nonce, Views};
 use multisig::Multisig;
 use multitrait::TryDecodeFrom;
 use multiutil::{BaseEncoded, CodecInfo, EncodingInfo};

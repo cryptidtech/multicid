@@ -1,50 +1,45 @@
 # Multicid
 
-A Rust implementation of a
-[multiformats](https://github.com/multiformats/multiformats) content identifier
-(CID).
+[![](https://img.shields.io/badge/made%20by-Cryptid%20Technologies-gold.svg?style=flat-square)][0]
+[![](https://img.shields.io/badge/project-provenance-purple.svg?style=flat-square)][1]
+
+A Rust implementation of the [multiformats][2] [content identifier (CID)][3]
+and [very long-lived addresses (VLADs)][4] specifications.
 
 ## Current Status
 
-This crate supports the full CIDv0 and CIDv1
-[specification](https://github.com/multiformats/cid) as used in IPFS. It also
-defines a new content identifier called a Vlad (i.e. Very Long-lived ADdress)
-that is documented below. A Vlad is intended to replace public keys as
-identifiers in distributed systems by combinind a random nonce (i.e. number
-used once) and a CID for a WASM verification script designed to run in a
-[WACC](https://github.com/cryptidtech/wacc.git) compliant virtual machine. The 
-nonce in the Vlad can be random but in some use cases the bytes inside the 
-nonce are a [multisig](https://github.com/cryptidtech/multisig) digital signature
-over the CID part of the Vlad. Digital signatures are random enough to serve 
-the purposes of making the vlad unique while also cryptographically linking the
-Vlad to the person who controls the key pair used to create the Vlad.
+This crate supports the full CIDv0 and CIDv1 [specification][3] as used in
+IPFS and the VLADs used in provenance log based applications. For technical
+details on either, please refer to their respective specifications linked
+above.
 
-## Vlad Format
+### What are VLADs?
 
-```
-vlad 
-sigil       cid value
-|              |
-v              v
-0x07 <nonce> <cid>
-        ^
-        |
-    nonce value
+A VLAD is intended to replace public keys as identifiers in distributed systems
+by combinind a random nonce (i.e. number used once) and a CID for a WASM
+verification script designed to run in an implementation of the web assembly
+cryptographic constructs (WACC) VM. The nonce in the Vlad can be random but in
+some use cases the bytes inside the nonce are a [multisig][5] digital signature
+over the CID part of the VLAD. Digital signatures are random enough to serve
+the purposes of making the VLAD unique while also cryptographically linking the
+VLAD to the key pair used to create the VLAD. This is a critical security
+feature for linking VLADs to provenance logs.
 
-<nonce> ::= 0x3b <varbytes>
-             ^
-            / 
- nonce sigil
+Briefly, the reasons why distributed systems should use VLADs instead of public
+key identifiers is because key material is subject to compromise and rotation.
+Distributed systems that rely on public key identifiers (e.g. web-of-trust, all
+other decentralized identity systems) are brittle because whenever keys change
+the links between the systems break. Public keys are typically used because 
+they are random enough to number a seemingly infinite number of things without 
+running out and they are also a cryptographic commitment to a validation
+function that can be used to verify the data they are identifying. VLADs have
+both of these properties but are not derived from key material and are
+therefore not subject to compromise or rotation. That makes them much more 
+resilient and stable distributed system links over long spans of time.
 
-<varbytes> ::= <varuint> N(OCTET)
-                   ^        ^
-                  /          \
-          count of            variable number
-            octets            of octets
-```
-
-The multicodec varuint sigil for a vlad is `0x07`. Immediately following the 
-sigil is the nonce followed by the cid. The multicodec varuint sigil for a 
-nonce is 0x3b followed by a varbytes. In the cases where the nonce is a digital
-signature, the bytes in the varbytes starts with the multisig varuint sigil of 
-`0x39`.
+[0]: https://cryptid.tech/
+[1]: https://github.com/cryptidtech/provenance-specifications/
+[2]: https://github.com/multiformats/multiformats
+[3]: https://docs.ipfs.tech/concepts/content-addressing/
+[4]: https://github.com/cryptidtech/blob/main/specifications/vlad.md
+[5]: https://github.com/cryptidtech/multisig
