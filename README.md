@@ -2,6 +2,7 @@
 
 [![](https://img.shields.io/badge/made%20by-Cryptid%20Technologies-gold.svg?style=flat-square)][0]
 [![](https://img.shields.io/badge/project-provenance-purple.svg?style=flat-square)][1]
+[![](https://img.shields.io/badge/project-multiformats-blue.svg?style=flat-square)][2]
 
 A Rust implementation of the [multiformats][2] [content identifier (CID)][3]
 and [very long-lived addresses (VLADs)][4] specifications.
@@ -9,9 +10,9 @@ and [very long-lived addresses (VLADs)][4] specifications.
 ## Current Status
 
 This crate supports the full CIDv0 and CIDv1 [specification][3] as used in
-IPFS and the VLADs used in provenance log based applications. For technical
-details on either, please refer to their respective specifications linked
-above.
+IPFS and the VLAD [specification][4] used in provenance log based applications.
+For technical details on either, please refer to their respective
+specifications linked above.
 
 ### What are VLADs?
 
