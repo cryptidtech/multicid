@@ -232,6 +232,41 @@ mod tests {
     }
 
     #[test]
+    fn test_unknown_decode() {
+        // this does not assume it is a legacy v0 encoded CID
+        let v0_1 = EncodedCid::try_from("Qmdb16CztyugMSs5anEPrJ6bLeo39bTGcM13zNPqjqUidT").unwrap();
+        assert_eq!(Codec::Identity, v0_1.codec());
+        assert_eq!(Codec::DagPb, v0_1.target_codec);
+        assert_eq!(Codec::Sha2256, v0_1.hash.codec());
+
+        // this does not assume a multibase encoded CID
+        let v0_2 = EncodedCid::try_from("bafybeihcrr5owouhnms63areolshu2lp4jjbjqlhf4exegk7tnso5ja6py").unwrap();
+        assert_eq!(Codec::Cidv1, v0_2.codec());
+        assert_eq!(Codec::DagPb, v0_2.target_codec);
+        assert_eq!(Codec::Sha2256, v0_2.hash.codec());
+
+        let v0_3 = EncodedCid::try_from("f01701220e28c7aeb3a876b25ed822472e47a696fe25214c1672f0972195f9b64eea41e7e").unwrap();
+        assert_eq!(Codec::Cidv1, v0_3.codec());
+        assert_eq!(Codec::DagPb, v0_3.target_codec);
+        assert_eq!(Codec::Sha2256, v0_3.hash.codec());
+
+        let v0_4 = EncodedCid::try_from("uAXASIOKMeus6h2sl7YIkcuR6aW_iUhTBZy8Jchlfm2TupB5-").unwrap();
+        assert_eq!(Codec::Cidv1, v0_4.codec());
+        assert_eq!(Codec::DagPb, v0_4.target_codec);
+        assert_eq!(Codec::Sha2256, v0_4.hash.codec());
+
+        let v0_5 = EncodedCid::try_from("0000000010111000000010010001000001110001010001100011110101110101100111010100001110110101100100101111011011000001000100100011100101110010001111010011010010110111111100010010100100001010011000001011001110010111100001001011100100001100101011111100110110110010011101110101001000001111001111110").unwrap();
+        assert_eq!(Codec::Cidv1, v0_5.codec());
+        assert_eq!(Codec::DagPb, v0_5.target_codec);
+        assert_eq!(Codec::Sha2256, v0_5.hash.codec());
+
+        assert_eq!(v0_1.hash, v0_2.hash);
+        assert_eq!(v0_1.hash, v0_3.hash);
+        assert_eq!(v0_1.hash, v0_4.hash);
+        assert_eq!(v0_1.hash, v0_5.hash);
+    }
+
+    #[test]
     fn test_v0_binary_roundtrip() {
         let v0 = Builder::default()
             .with_hash(
@@ -258,6 +293,7 @@ mod tests {
             .try_build_legacy_encoded()
             .unwrap();
         let s = v0.to_string();
+        println!("({}) {}", s.len(), s);
         assert_eq!(v0, LegacyEncodedCid::try_from(s.as_str()).unwrap());
     }
 
@@ -309,6 +345,7 @@ mod tests {
             .try_build_encoded()
             .unwrap();
         let s = v1.to_string();
+        println!("({}) {}", s.len(), s);
         assert_eq!(v1, EncodedCid::try_from(s.as_str()).unwrap());
     }
 }
