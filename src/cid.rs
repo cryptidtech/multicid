@@ -16,7 +16,7 @@ pub type LegacyEncodedCid = BaseEncoded<Cid, Base58Encoder>;
 pub type EncodedCid = BaseEncoded<Cid>;
 
 /// implementation of cid
-#[derive(Clone, Default, Eq, Ord, PartialOrd, PartialEq)]
+#[derive(Clone, Eq, Ord, PartialOrd, PartialEq)]
 pub struct Cid {
     /// the version of the Cid
     pub(crate) codec: Codec,
@@ -24,6 +24,16 @@ pub struct Cid {
     pub target_codec: Codec,
     /// multihash of the target
     pub hash: Multihash,
+}
+
+impl Default for Cid {
+    fn default() -> Self {
+        Builder::new(Codec::Cidv1)
+            .with_target_codec(Codec::DagCbor)
+            .with_hash(&Multihash::default())
+            .try_build()
+            .unwrap()
+    }
 }
 
 impl CodecInfo for Cid {
@@ -213,6 +223,14 @@ impl Builder {
 mod tests {
     use super::*;
     use multihash::mh;
+
+    #[test]
+    fn test_default() {
+        let v1 = Cid::default();
+        assert_eq!(Codec::Cidv1, v1.codec());
+        assert_eq!(Codec::DagCbor, v1.target_codec);
+        assert_eq!(Codec::Identity, v1.hash.codec());
+    }
 
     #[test]
     fn test_v0() {
