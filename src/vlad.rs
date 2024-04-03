@@ -4,7 +4,7 @@ use multibase::Base;
 use multicodec::Codec;
 use multikey::{nonce, Multikey, Nonce, Views};
 use multisig::Multisig;
-use multitrait::TryDecodeFrom;
+use multitrait::{Null, TryDecodeFrom};
 use multiutil::{BaseEncoded, CodecInfo, EncodingInfo};
 
 /// the Vlad multicodec sigil
@@ -108,6 +108,16 @@ impl<'a> TryDecodeFrom<'a> for Vlad {
         // decode the cid
         let (cid, ptr) = Cid::try_decode_from(ptr)?;
         Ok((Self { nonce, cid }, ptr))
+    }
+}
+
+impl Null for Vlad {
+    fn null() -> Self {
+        Self::default()
+    }
+
+    fn is_null(&self) -> bool {
+        *self == Self::null()
     }
 }
 
@@ -313,5 +323,14 @@ mod tests {
         let v: Vec<u8> = vlad.clone().into();
         //println!("signed len: {}", v.len());
         assert_eq!(vlad, Vlad::try_from(v.as_ref()).unwrap());
+    }
+
+    #[test]
+    fn test_null() {
+        let v1 = Vlad::null();
+        assert!(v1.is_null());
+        let v2 = Vlad::default();
+        assert_eq!(v1, v2);
+        assert!(v2.is_null());
     }
 }

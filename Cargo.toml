@@ -1,8 +1,8 @@
 [package]
 name = "multicid"
-version = "0.1.16"
+version = "0.1.17"
 edition = "2021"
-authors = ["Dave Huseby <dwh@linuxprogrammer.org>"]
+authors = ["Dave Grantham <dwg@linuxprogrammer.org>"]
 description = "Multicodec compatible content identifier implementation"
 repository = "https://github.com/cryptidtech/multicid.git"
 readme = "README.md"
