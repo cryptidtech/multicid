@@ -1,11 +1,10 @@
 use crate::{vlad, Cid, Vlad};
 use core::fmt;
 use multicodec::Codec;
-use multihash::{EncodedMultihash, Multihash};
+use multihash::Multihash;
 use multikey::Nonce;
 #[cfg(feature = "dag_cbor")]
 use multitrait::TryDecodeFrom;
-use multiutil::{Base58Encoder, BaseEncoded};
 use serde::{
     de::{Error, MapAccess, Visitor},
     Deserialize, Deserializer,
@@ -69,20 +68,8 @@ impl<'de> Deserialize<'de> for Cid {
                             if hash.is_some() {
                                 return Err(Error::duplicate_field("hash"));
                             }
-                            if let Some(codec) = codec {
-                                if codec == Codec::Identity {
-                                    let mh: BaseEncoded<Multihash, Base58Encoder> =
-                                        map.next_value()?;
-                                    hash = Some(mh.to_inner());
-                                } else {
-                                    let mh: EncodedMultihash = map.next_value()?;
-                                    hash = Some(mh.to_inner());
-                                }
-                            } else {
-                                return Err(Error::custom(
-                                    "don't know what verions of hash this is",
-                                ));
-                            }
+                            let mh: Multihash = map.next_value()?;
+                            hash = Some(mh);
                         }
                     }
                 }

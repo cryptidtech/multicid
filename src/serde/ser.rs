@@ -1,7 +1,4 @@
 use crate::{vlad, Cid, Vlad};
-use multicodec::Codec;
-use multihash::{EncodedMultihash, Multihash};
-use multiutil::{Base58Encoder, BaseEncoded, CodecInfo, EncodingInfo};
 use serde::ser::{self, SerializeStruct};
 
 /// Serialize instance of [`crate::Cid`]
@@ -14,20 +11,7 @@ impl ser::Serialize for Cid {
             let mut ss = serializer.serialize_struct("cid", 3)?;
             ss.serialize_field("version", &self.codec.code())?;
             ss.serialize_field("encoding", &self.target_codec)?;
-            if self.codec() == Codec::Identity {
-                ss.serialize_field(
-                    "hash",
-                    &BaseEncoded::<Multihash, Base58Encoder>::new(
-                        self.encoding(),
-                        self.hash.clone(),
-                    ),
-                )?;
-            } else {
-                ss.serialize_field(
-                    "hash",
-                    &EncodedMultihash::new(self.encoding(), self.hash.clone()),
-                )?;
-            }
+            ss.serialize_field("hash", &self.hash)?;
             ss.end()
         } else {
             #[cfg(feature = "dag_cbor")]

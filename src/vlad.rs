@@ -113,7 +113,10 @@ impl<'a> TryDecodeFrom<'a> for Vlad {
 
 impl Null for Vlad {
     fn null() -> Self {
-        Self::default()
+        Self {
+            nonce: Nonce::null(),
+            cid: Cid::null(),
+        }
     }
 
     fn is_null(&self) -> bool {
@@ -330,7 +333,7 @@ mod tests {
         let v1 = Vlad::null();
         assert!(v1.is_null());
         let v2 = Vlad::default();
-        assert_eq!(v1, v2);
-        assert!(v2.is_null());
+        assert!(v1 != v2);
+        assert!(!v2.is_null());
     }
 }

@@ -8,6 +8,7 @@ mod tests {
     use multicodec::Codec;
     use multihash::mh;
     use multikey::nonce;
+    use multitrait::Null;
     use serde_test::{assert_tokens, Configure, Token};
 
     #[test]
@@ -45,16 +46,18 @@ mod tests {
         assert_tokens(
             &v0.readable(),
             &[
-                Token::Struct {
-                    name: "cid",
-                    len: 3,
-                },
+                Token::Struct { name: "cid", len: 3, },
                 Token::BorrowedStr("version"),
                 Token::U64(0),
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("dag-pb"),
                 Token::BorrowedStr("hash"),
-                Token::BorrowedStr("Qmdb16CztyugMSs5anEPrJ6bLeo39bTGcM13zNPqjqUidT"),
+                Token::Struct { name: "multihash", len: 2, },
+                Token::BorrowedStr("codec"),
+                Token::BorrowedStr("sha2-256"),
+                Token::BorrowedStr("hash"),
+                Token::BorrowedStr("f20e28c7aeb3a876b25ed822472e47a696fe25214c1672f0972195f9b64eea41e7e"),
+                Token::StructEnd,
                 Token::StructEnd,
             ],
         );
@@ -73,7 +76,7 @@ mod tests {
             .unwrap();
 
         let s = serde_json::to_string(&v0).unwrap();
-        assert_eq!(s, "{\"version\":0,\"encoding\":\"dag-pb\",\"hash\":\"Qmdb16CztyugMSs5anEPrJ6bLeo39bTGcM13zNPqjqUidT\"}");
+        assert_eq!(s, "{\"version\":0,\"encoding\":\"dag-pb\",\"hash\":{\"codec\":\"sha2-256\",\"hash\":\"f20e28c7aeb3a876b25ed822472e47a696fe25214c1672f0972195f9b64eea41e7e\"}}");
         assert_eq!(v0, serde_json::from_str(&s).unwrap());
     }
 
@@ -171,7 +174,12 @@ mod tests {
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("dag-cbor"),
                 Token::BorrowedStr("hash"),
-                Token::BorrowedStr("bcrafpew23fqilnqhnohe4y5vpdeq2azwxsvn55hsi4cn7btbjfjguhtnep4j4imk2p3bokt6e3tog6r55jzi4xzdfzaws2wsq26mveqbxy"),
+                Token::Struct { name: "multihash", len: 2, },
+                Token::BorrowedStr("codec"),
+                Token::BorrowedStr("sha3-512"),
+                Token::BorrowedStr("hash"),
+                Token::BorrowedStr("f405792dad96085b6076b8e4e63b578c90d0336bcaadef4f24704df866149526a1e6d23f89e218ad3f6172a7e26e6e37a3dea728e5f232e41696ad286bcca9201be"),
+                Token::StructEnd,
                 Token::StructEnd,
             ],
         );
@@ -305,7 +313,12 @@ mod tests {
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("dag-cbor"),
                 Token::BorrowedStr("hash"),
-                Token::BorrowedStr("bcrafpew23fqilnqhnohe4y5vpdeq2azwxsvn55hsi4cn7btbjfjguhtnep4j4imk2p3bokt6e3tog6r55jzi4xzdfzaws2wsq26mveqbxy"),
+                Token::Struct { name: "multihash", len: 2, },
+                Token::BorrowedStr("codec"),
+                Token::BorrowedStr("sha3-512"),
+                Token::BorrowedStr("hash"),
+                Token::BorrowedStr("f405792dad96085b6076b8e4e63b578c90d0336bcaadef4f24704df866149526a1e6d23f89e218ad3f6172a7e26e6e37a3dea728e5f232e41696ad286bcca9201be"),
+                Token::StructEnd,
                 Token::StructEnd,
                 Token::StructEnd,
             ],
@@ -337,7 +350,7 @@ mod tests {
             .unwrap();
 
         let s = serde_json::to_string(&vlad).unwrap();
-        assert_eq!(s, "{\"nonce\":{\"nonce\":\"f20d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832\"},\"cid\":{\"version\":1,\"encoding\":\"dag-cbor\",\"hash\":\"bcrafpew23fqilnqhnohe4y5vpdeq2azwxsvn55hsi4cn7btbjfjguhtnep4j4imk2p3bokt6e3tog6r55jzi4xzdfzaws2wsq26mveqbxy\"}}");
+        assert_eq!(s, "{\"nonce\":{\"nonce\":\"f20d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832\"},\"cid\":{\"version\":1,\"encoding\":\"dag-cbor\",\"hash\":{\"codec\":\"sha3-512\",\"hash\":\"f405792dad96085b6076b8e4e63b578c90d0336bcaadef4f24704df866149526a1e6d23f89e218ad3f6172a7e26e6e37a3dea728e5f232e41696ad286bcca9201be\"}}}");
         assert_eq!(vlad, serde_json::from_str(&s).unwrap());
     }
 
@@ -401,5 +414,110 @@ mod tests {
         //println!("{}", hex::encode(&v));
         assert_eq!(v, hex::decode("83410782413b582120d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832d82a584500017114405792dad96085b6076b8e4e63b578c90d0336bcaadef4f24704df866149526a1e6d23f89e218ad3f6172a7e26e6e37a3dea728e5f232e41696ad286bcca9201be").unwrap());
         assert_eq!(vlad, serde_cbor::from_slice(&v).unwrap());
+    }
+
+    #[test]
+    fn test_null_cid_serde_compact() {
+        let c = cid::Cid::null();
+        assert_tokens(
+            &c.compact(),
+            &[
+                Token::BorrowedBytes(&[1, 0, 0, 0])
+            ]
+        );
+    }
+
+    #[test]
+    fn test_null_cid_serde_readable() {
+        let c = cid::Cid::null();
+        assert_tokens(
+            &c.readable(),
+            &[
+                Token::Struct { name: "cid", len: 3, },
+                Token::BorrowedStr("version"),
+                Token::U64(1),
+                Token::BorrowedStr("encoding"),
+                Token::BorrowedStr("identity"),
+                Token::BorrowedStr("hash"),
+                Token::Struct { name: "multihash", len: 2, },
+                Token::BorrowedStr("codec"),
+                Token::BorrowedStr("identity"),
+                Token::BorrowedStr("hash"),
+                Token::BorrowedStr("f00"),
+                Token::StructEnd,
+                Token::StructEnd,
+            ]
+        );
+    }
+
+    #[test]
+    fn test_encoded_null_cid_serde_readable() {
+        let c: cid::EncodedCid = cid::Cid::null().into();
+        assert_tokens(
+            &c.readable(),
+            &[
+                Token::BorrowedStr("z2UzHM"),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_null_vlad_serde_compact() {
+        let v = vlad::Vlad::null();
+        assert_tokens(
+            &v.compact(),
+            &[
+                Token::Tuple { len: 3 },
+                Token::BorrowedBytes(&[0x7]),
+                Token::Tuple { len: 2 },
+                Token::BorrowedBytes(&[0x3b]),
+                Token::BorrowedBytes(&[0x0]),
+                Token::TupleEnd,
+                Token::BorrowedBytes(&[0x1, 0x0, 0x0, 0x0]),
+                Token::TupleEnd,
+            ]
+        );
+    }
+
+    #[test]
+    fn test_null_vlad_serde_readable() {
+        let v = vlad::Vlad::null();
+        assert_tokens(
+            &v.readable(),
+            &[
+                Token::Struct { name: "vlad", len: 2, },
+                Token::BorrowedStr("nonce"),
+                Token::Struct { name: "nonce", len: 1, },
+                Token::BorrowedStr("nonce"),
+                Token::BorrowedStr("f00"),
+                Token::StructEnd,
+                Token::BorrowedStr("cid"),
+                Token::Struct { name: "cid", len: 3, },
+                Token::BorrowedStr("version"),
+                Token::U64(1),
+                Token::BorrowedStr("encoding"),
+                Token::BorrowedStr("identity"),
+                Token::BorrowedStr("hash"),
+                Token::Struct { name: "multihash", len: 2, },
+                Token::BorrowedStr("codec"),
+                Token::BorrowedStr("identity"),
+                Token::BorrowedStr("hash"),
+                Token::BorrowedStr("f00"),
+                Token::StructEnd,
+                Token::StructEnd,
+                Token::StructEnd,
+            ]
+        );
+    }
+
+    #[test]
+    fn test_encoded_null_vlad_serde_readable() {
+        let v: vlad::EncodedVlad = vlad::Vlad::null().into();
+        assert_tokens(
+            &v.readable(),
+            &[
+                Token::BorrowedStr("ba45qaaiaaaaa"),
+            ]
+        );
     }
 }
