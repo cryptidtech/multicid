@@ -3,7 +3,7 @@ use core::fmt;
 use multibase::Base;
 use multicodec::Codec;
 use multihash::Multihash;
-use multitrait::TryDecodeFrom;
+use multitrait::{Null, TryDecodeFrom};
 use multiutil::{Base58Encoder, BaseEncoded, CodecInfo, EncodingInfo};
 
 /// the multicodec sigil for Cid
@@ -122,6 +122,20 @@ impl<'a> TryDecodeFrom<'a> for Cid {
             },
             ptr,
         ))
+    }
+}
+
+impl Null for Cid {
+    fn null() -> Self {
+        Builder::new(Codec::Cidv1)
+            .with_target_codec(Codec::Identity)
+            .with_hash(&Multihash::null())
+            .try_build()
+            .unwrap()
+    }
+
+    fn is_null(&self) -> bool {
+        *self == Self::null()
     }
 }
 
@@ -365,5 +379,14 @@ mod tests {
         let s = v1.to_string();
         println!("({}) {}", s.len(), s);
         assert_eq!(v1, EncodedCid::try_from(s.as_str()).unwrap());
+    }
+
+    #[test]
+    fn test_null() {
+        let cid1 = Cid::null();
+        assert!(cid1.is_null());
+        let cid2 = Cid::default();
+        assert!(cid1 != cid2);
+        assert!(!cid2.is_null());
     }
 }
