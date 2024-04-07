@@ -314,13 +314,14 @@ mod tests {
         let vlad = Builder::default()
             .with_signing_key(&mk)
             .with_cid(&cid)
+            .with_base_encoding(Base::Base16Lower)
             .try_build_encoded()
             .unwrap();
 
         // make sure the signature checks out
         assert_eq!((), vlad.verify(&mk).unwrap());
         let s = vlad.to_string();
-        //println!("({}) {}", s.len(), s);
+        println!("({}) {}", s.len(), s);
         assert_eq!(vlad, EncodedVlad::try_from(s.as_str()).unwrap());
         let vlad = vlad.to_inner();
         let v: Vec<u8> = vlad.clone().into();
