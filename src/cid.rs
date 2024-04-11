@@ -165,7 +165,8 @@ pub struct Builder {
 }
 
 impl Builder {
-    /// create a hash with the given codec
+    /// create a cid with the given codec (e.g. Cidv1, etc)
+    /// use Builder::default() to get a v0 CID (see the tests below)
     pub fn new(codec: Codec) -> Self {
         Builder {
             codec: Some(codec),
