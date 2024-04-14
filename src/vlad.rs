@@ -202,7 +202,7 @@ mod tests {
     use super::*;
     use crate::cid;
     use multihash::mh;
-    use multikey::{nonce, EncodedMultikey};
+    use multikey::EncodedMultikey;
 
     #[test]
     fn test_default() {

@@ -182,13 +182,8 @@ impl<'de> Deserialize<'de> for Vlad {
         if deserializer.is_human_readable() {
             deserializer.deserialize_struct(vlad::SIGIL.as_str(), FIELDS, VladVisitor)
         } else {
-            let (sigil, nonce, cid): (Codec, Nonce, Cid) = Deserialize::deserialize(deserializer)?;
-
-            if sigil != vlad::SIGIL {
-                return Err(Error::custom("deserialized sigil is not a Vlad sigil"));
-            }
-
-            Ok(Self { nonce, cid })
+            let b: &'de [u8] = Deserialize::deserialize(deserializer)?;
+            Ok(Self::try_from(b).map_err(|e| Error::custom(e.to_string()))?)
         }
     }
 }

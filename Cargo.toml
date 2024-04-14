@@ -1,6 +1,6 @@
 [package]
 name = "multicid"
-version = "0.1.19"
+version = "1.0.0"
 edition = "2021"
 authors = ["Dave Grantham <dwg@linuxprogrammer.org>"]
 description = "Multicodec compatible content identifier implementation"

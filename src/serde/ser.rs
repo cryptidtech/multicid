@@ -53,7 +53,8 @@ impl ser::Serialize for Vlad {
             ss.serialize_field("cid", &self.cid)?;
             ss.end()
         } else {
-            (vlad::SIGIL, self.nonce.clone(), self.cid.clone()).serialize(serializer)
+            let v: Vec<u8> = self.clone().into();
+            serializer.serialize_bytes(v.as_slice())
         }
     }
 }
