@@ -326,7 +326,7 @@ mod tests {
         assert_eq!(vlad, EncodedVlad::try_from(s.as_str()).unwrap());
         let vlad = vlad.to_inner();
         let v: Vec<u8> = vlad.clone().into();
-        //println!("signed len: {}", v.len());
+        println!("BLAH: {}", hex::encode(&v));
         assert_eq!(vlad, Vlad::try_from(v.as_ref()).unwrap());
     }
 
