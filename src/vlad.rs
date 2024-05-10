@@ -6,32 +6,31 @@ use multicodec::Codec;
 use multikey::{nonce, Multikey, Nonce, Views};
 use multisig::Multisig;
 use multitrait::{Null, TryDecodeFrom};
-use multiutil::{BaseEncoded, CodecInfo, EncodingInfo};
+use multiutil::{BaseEncoded, CodecInfo, DetectedEncoder, EncodingInfo};
 
 /// the Vlad multicodec sigil
 pub const SIGIL: Codec = Codec::Vlad;
 
-/// a multibase encoded Vlad
-pub type EncodedVlad = BaseEncoded<Vlad>;
+/// a multibase encoded Vlad that can decode from any number of encoding but always encodes to
+/// Vlad's preferred Base32Lower multibase encoding (i.e. liberal in what we except, strict in what
+/// we generate)
+pub type EncodedVlad = BaseEncoded<Vlad, DetectedEncoder>;
 
-/// A verifiable long-lived address (VLAD) represents an identifier for loosely
-/// coupled distributed systems that combines a random unique idenitfier (none)
-/// with the content address of a verification function in executable format.
+/// A verifiable long-lived address (VLAD) represents an identifier for loosely coupled distributed
+/// systems that combines a random unique idenitfier (none) with the content address of a
+/// verification function in executable format.
 ///
-/// The goal is to avoid the anti-pattern of using public keys as identifiers.
-/// Public keys are chosen because they are random and unique enough to be
-/// useful identifiers and are also a cryptographic commitment to a validation
-/// function--the public key signature validation function. Using public keys
-/// as an identifer is an anti-pattern because using key material means that
-/// the identifiers are subject to compromise and must be rotated often to
-/// maintain security so their "shelf-life" is limited. Rotating and/or
-/// abandoning keys due to compromise causes the identifier to become invalid.
-/// Any system that stores these identifiers then possesses broken links to
-/// the value the identifier is associated with.
+/// The goal is to avoid the anti-pattern of using public keys as identifiers. Public keys are
+/// chosen because they are random and unique enough to be useful identifiers and are also a
+/// cryptographic commitment to a validation function--the public key signature validation
+/// function. Using public keys as an identifer is an anti-pattern because using key material means
+/// that the identifiers are subject to compromise and must be rotated often to maintain security
+/// so their "shelf-life" is limited. Rotating and/or abandoning keys due to compromise causes the
+/// identifier to become invalid. Any system that stores these identifiers then possesses broken
+/// links to the value the identifier is associated with.
 ///
-/// The solution is to realize that we only need a random identifier and a
-/// cryptographic commitment to a validation function to replace keys as
-/// identifiers. VLADs meet those requirements.
+/// The solution is to realize that we only need a random identifier and a cryptographic commitment
+/// to a validation function to replace keys as identifiers. VLADs meet those requirements.
 #[derive(Clone, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Vlad {
     /// the random nonce for uniqueness
@@ -203,6 +202,7 @@ mod tests {
     use crate::cid;
     use multihash::mh;
     use multikey::EncodedMultikey;
+    use multiutil::base_name;
 
     #[test]
     fn test_default() {
@@ -296,6 +296,59 @@ mod tests {
     }
 
     #[test]
+    fn test_encodings_roundtrip() {
+        // build a nonce
+        let mut rng = rand::rngs::OsRng::default();
+        let nonce = nonce::Builder::new_from_random_bytes(32, &mut rng)
+            .try_build()
+            .unwrap();
+
+        // build a cid
+        let cid = cid::Builder::new(Codec::Cidv1)
+            .with_target_codec(Codec::DagCbor)
+            .with_hash(
+                &mh::Builder::new_from_bytes(Codec::Sha3512, b"for great justice, move every zig!")
+                    .unwrap()
+                    .try_build()
+                    .unwrap(),
+            )
+            .try_build()
+            .unwrap();
+
+        let encodings = vec![
+            Base::Base2,
+            Base::Base8,
+            Base::Base10,
+            Base::Base16Lower,
+            Base::Base16Upper,
+            Base::Base32Lower,
+            Base::Base32Upper,
+            Base::Base32HexLower,
+            Base::Base32HexUpper,
+            Base::Base32Z,
+            Base::Base36Lower,
+            Base::Base36Upper,
+            Base::Base58Flickr,
+            Base::Base58Btc,
+            Base::Base64,
+            Base::Base64Url,
+        ];
+
+        for encoding in encodings {
+            let vlad = Builder::default()
+                .with_nonce(&nonce)
+                .with_cid(&cid)
+                .with_base_encoding(encoding)
+                .try_build_encoded()
+                .unwrap();
+
+            let s = vlad.to_string();
+            println!("{}: ({}) {}", base_name(encoding), s.len(), s);
+            assert_eq!(vlad, EncodedVlad::try_from(s.as_str()).unwrap());
+        }
+    }
+
+    #[test]
     fn test_signed_vlad() {
         // build a cid
         let cid = cid::Builder::new(Codec::Cidv1)
@@ -309,24 +362,26 @@ mod tests {
             .try_build()
             .unwrap();
 
-        let s = "zF3WX3Dwnv7jv2nPfYL6e2XaLdNyaiwkPyzEtgw65d872KYG22jezzuYPtrds8WSJ3Sv8SCA";
+        let s = "bhkasmcdumvzxiidlmv4qcaja42hlepmnedftr7ibzzo56qaswo6jvdmypljivo3b3imhjxqfnsvq";
         let mk = EncodedMultikey::try_from(s).unwrap();
 
         let vlad = Builder::default()
             .with_signing_key(&mk)
             .with_cid(&cid)
-            .with_base_encoding(Base::Base16Lower)
+            .with_base_encoding(Base::Base32Z)
             .try_build_encoded()
             .unwrap();
 
         // make sure the signature checks out
         assert_eq!((), vlad.verify(&mk).unwrap());
         let s = vlad.to_string();
-        println!("({}) {}", s.len(), s);
-        assert_eq!(vlad, EncodedVlad::try_from(s.as_str()).unwrap());
+        //println!("BASE32Z ({}) {}", s.len(), s);
+        let de = EncodedVlad::try_from(s.as_str()).unwrap();
+        assert_eq!(vlad, de);
+        assert_eq!(Base::Base32Z, de.encoding());
         let vlad = vlad.to_inner();
         let v: Vec<u8> = vlad.clone().into();
-        println!("BLAH: {}", hex::encode(&v));
+        //println!("BLAH: {}", hex::encode(&v));
         assert_eq!(vlad, Vlad::try_from(v.as_ref()).unwrap());
     }
 

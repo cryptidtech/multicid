@@ -5,7 +5,7 @@ use multibase::Base;
 use multicodec::Codec;
 use multihash::Multihash;
 use multitrait::{Null, TryDecodeFrom};
-use multiutil::{Base58Encoder, BaseEncoded, CodecInfo, EncodingInfo};
+use multiutil::{Base58Encoder, BaseEncoded, CodecInfo, DetectedEncoder, EncodingInfo};
 
 /// the multicodec sigil for Cid
 pub const SIGIL: Codec = Codec::Cidv1;
@@ -13,8 +13,9 @@ pub const SIGIL: Codec = Codec::Cidv1;
 /// a bare base58 encoded Cid
 pub type LegacyEncodedCid = BaseEncoded<Cid, Base58Encoder>;
 
-/// a multibase encoded Cid
-pub type EncodedCid = BaseEncoded<Cid>;
+/// a multibase encoded Cid that detects encoding while decoding. this allows transparent support
+/// for Base58Btc encoded v0 Cid's as well as multibase encoded v1 Cid's
+pub type EncodedCid = BaseEncoded<Cid, DetectedEncoder>;
 
 /// implementation of cid
 #[derive(Clone, Eq, Ord, PartialOrd, PartialEq)]
