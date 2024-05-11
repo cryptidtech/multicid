@@ -202,7 +202,7 @@ mod tests {
     use crate::cid;
     use multihash::mh;
     use multikey::EncodedMultikey;
-    use multiutil::base_name;
+    use multiutil::{base_name, BaseIter};
 
     #[test]
     fn test_default() {
@@ -315,26 +315,11 @@ mod tests {
             .try_build()
             .unwrap();
 
-        let encodings = vec![
-            Base::Base2,
-            Base::Base8,
-            Base::Base10,
-            Base::Base16Lower,
-            Base::Base16Upper,
-            Base::Base32Lower,
-            Base::Base32Upper,
-            Base::Base32HexLower,
-            Base::Base32HexUpper,
-            Base::Base32Z,
-            Base::Base36Lower,
-            Base::Base36Upper,
-            Base::Base58Flickr,
-            Base::Base58Btc,
-            Base::Base64,
-            Base::Base64Url,
-        ];
+        // start at Identity so we skip it
+        let mut itr: BaseIter = Base::Identity.into();
 
-        for encoding in encodings {
+        while let Some(encoding) = itr.next() {
+            //print!("{}...", base_name(encoding));
             let vlad = Builder::default()
                 .with_nonce(&nonce)
                 .with_cid(&cid)
@@ -344,7 +329,38 @@ mod tests {
 
             let s = vlad.to_string();
             println!("{}: ({}) {}", base_name(encoding), s.len(), s);
+            //println!("worked!");
             assert_eq!(vlad, EncodedVlad::try_from(s.as_str()).unwrap());
+        }
+    }
+
+    #[test]
+    fn test_naked_encodings() {
+        let naked_encoded = vec![
+            (Base::Base2, "00000111001110110010000010101101010101110101001111101110010011000000100001110101101011100000010100101011011011000100111111010001010010010001010001110100010110001100000001110101110010001001010101101101000111101001001110110100101011010011000111001010111000110100101011100010111001100000000101110001000101000100000001010111100100101101101011011001011000001000010110110110000001110110101110001110010011100110001110110101011110001100100100001101000000110011011010111100101010101101111011110100111100100100011100000100110111111000011001100001010010010101001001101010000111100110110100100011111110001001111000100001100010101101001111110110000101110010101001111110001001101110011011100011011110100011110111101010011100101000111001011111001000110010111001000001011010010110101011010010100001101011110011001010100100100000000110111110"),
+            (Base::Base8, "01635440532535237344601035327005126661176424442435054300353442253321722355126461625615127056300134212100257113326626020555403553434471435527431103201466571253367517110701157606302445223241715510774236103053237541345237423346706750757247121627621456202645526450327462511001574"),
+            (Base::Base10, "3159896538572941552300237467498239240230991094809220818669996208403756627333440284950116478852282558426450173929503136577705156387666971927483177444527629374454471997041770248911157995781224129392264907918430937825252959411085792202002484276887998"),
+            (Base::Base16Lower, "073b203e9e75230920469f4f2fb703447fb6451b66eef3c7bf2f376bc05d9fd147ae60017114405792dad96085b6076b8e4e63b578c90d0336bcaadef4f24704df866149526a1e6d23f89e218ad3f6172a7e26e6e37a3dea728e5f232e41696ad286bcca9201be"),
+            (Base::Base16Upper, "073B20BFA0561070F9B1963193361880319E93E80267D904BB19C9BBD1E64141A01351017114405792DAD96085B6076B8E4E63B578C90D0336BCAADEF4F24704DF866149526A1E6D23F89E218AD3F6172A7E26E6E37A3DEA728E5F232E41696AD286BCCA9201BE"),
+            (Base::Base32Lower, "a45sapu6ourqsicgt5hs7nydir73mri3m3xphr57f43wxqc5t7iupltaafyriqcxslnnsyefwydwxdsomo2xrsinam3lzkw66tzeobg7qzqusutkdzwsh6e6egfnh5qxfj7cnzxdpi66u4uol4rs4qljnljinpgksia34"),
+            (Base::Base32Upper, "A45SAPU6OURQSICGT5HS7NYDIR73MRI3M3XPHR57F43WXQC5T7IUPLTAAFYRIQCXSLNNSYEFWYDWXDSOMO2XRSINAM3LZKW66TZEOBG7QZQUSUTKDZWSH6E6EGFNH5QXFJ7CNZXDPI66U4UOL4RS4QLJNLJINPGKSIA34"),
+            (Base::Base32HexLower, "0sti0fkuekhgi826jt7ivdo38hvrch8rcrnf7htv5srmng2tjv8kfbj005oh8g2nibddio45mo3mn3ieceqnhi8d0crbpamuujp4e16vgpgkikja3pmi7u4u465d7tgn59v2dpn3f8uukskebshisgb9db98df6ai80rs"),
+            (Base::Base32HexUpper, "0STI0FKUEKHGI826JT7IVDO38HVRCH8RCRNF7HTV5SRMNG2TJV8KFBJ005OH8G2NIBDDIO45MO3MN3IECEQNHI8D0CRBPAMUUJP4E16VGPGKIKJA3PMI7U4U465D7TGN59V2DPN3F8UUKSKEBSHISGB9DB98DF6AI80RS"),
+            (Base::Base32Z, "yh71yxw6qwto1engu7819padet95cte5c5zx8t79fh5szon7u9ewxmuyyfateonz1mpp1arfsadszd1qcq4zt1epyc5m3ks66u3rqbg9o3ow1wukd3s186r6rgfp87ozfj9np3zdxe66whwqmht1homjpmjepxgk1ey5h"),
+            (Base::Base36Lower, "40lqkyrdflt5v9goe8qxj6v8om6uxyo6iybtcvwxzwmvla5jsgml8cgwg6a3xa7njoxzp468s6m0y8p6ao34ju25n0pq4ufqgta4mnzdndn1lfrfu2oznv4ahta8bsg2oqalj92no7qvtscymndyc9u2rtuacvy"),
+            (Base::Base36Upper, "40LQR8EHJ6ME58F065O9TNCQ3T2ZWFYGCRG6L8O8A1EJI7FS8GEKPH2FMBOMIZQS37C38GAUL9H647S6AYUPCMDQFPQSEX5HDAPQGCE2FHI11GPD5KO0TSJ2H99M2RNEOC2LY0UV77A2G7HNELBDU4XWODJJZJY"),
+            (Base::Base58Flickr, "qay7kq5wDXCsRyvdbDwvtZYGNjcuSYuTsyaCQpjkHt9subP7qmVoBLMfbhr4vDFhBDR98bZVWDQ8ZLT4zakLhCRwhzH2FRNxRtXV57X5pEaWF447Ea2NUZnsSCk5bQqz4xrkufEogbbs"),
+            (Base::Base58Btc, "RAZ7SAQ7ePhs1oGoUSnwJgdHSY4SVaKtBHd4Z7LgYihSJ14FAGHMi331doB5Sz8pK5kdLWokERTFqJd1gYjt56z5WkxZ86FXwcd5PbqdRqfvWgyimXRThMfLfFw9H7yPLLyrUE3TyHU1"),
+            (Base::Base64, "BzsgPp51IwkgRp9PL7cDRH+2RRtm7vPHvy83a8Bdn9FHrmABcRRAV5La2WCFtgdrjk5jtXjJDQM2vKre9PJHBN+GYUlSah5tI/ieIYrT9hcqfibm43o96nKOXyMuQWlq0oa8ypIBvg"),
+            (Base::Base64Url, "BzsgPp51IwkgRp9PL7cDRH-2RRtm7vPHvy83a8Bdn9FHrmABcRRAV5La2WCFtgdrjk5jtXjJDQM2vKre9PJHBN-GYUlSah5tI_ieIYrT9hcqfibm43o96nKOXyMuQWlq0oa8ypIBvg"),
+            (Base::Base256Emoji, "🌓🤷😅🌞🤩🦋😄🤘😟😏👶🌚✋👈🙂💣🌟🏆🎊💘⚡💕😚👉⚠✅😉🎵🤝🌹😬🤤⚠⚽🙊🪐✅💾😋😑🌼😗🍒😥🖕🤬🌓🙃🤞👇💃💨😣🦋🌍🛰🤦💟😰🐷👻👐🤩🌌☎💝🤤😀❣😬😘🌷🔥🥵🐶👏💫🤧🤮❤😆😠💖🍑👆💐😌🐸🥺🤞🥳🔥☺💗🌟😬🤠💝💟😷🌼🪐😖")
+        ];
+
+        for naked in naked_encoded {
+            print!("{}...", base_name(naked.0));
+            let vlad = EncodedVlad::try_from(naked.1).unwrap();
+            assert_eq!(naked.0, vlad.encoding());
+            println!("worked!!");
         }
     }
 
