@@ -258,7 +258,7 @@ mod tests {
 
         assert_tokens(
             &vlad.readable(),
-            &[Token::BorrowedStr("ba45sbuk4j6zjcgxbgn7rak6k6taardjwgrnyrmsds2higtc77ilza6bsafyriqcxslnnsyefwydwxdsomo2xrsinam3lzkw66tzeobg7qzqusutkdzwsh6e6egfnh5qxfj7cnzxdpi66u4uol4rs4qljnljinpgksia34"),
+            &[Token::BorrowedStr("bq4slwjba2foe7murdlqtg7yqfpfpjqairu3diw4iwjbzndudjrp7uf4qpazac4iuiblzfwwzmcc3mb3lrzhghnlyzegqgnv4vlppj4shatpymykjkjvb43jd7cpcdcwt6ylsu7rg43rxuppkokhf6izoifuwvuugxtfjean6"),
             ],
         );
     }
@@ -382,7 +382,7 @@ mod tests {
 
         let v = serde_cbor::to_vec(&vlad).unwrap();
         //println!("serde_cbor vlad: {}", hex::encode(&v));
-        assert_eq!(v, hex::decode("5867073b20d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832017114405792dad96085b6076b8e4e63b578c90d0336bcaadef4f24704df866149526a1e6d23f89e218ad3f6172a7e26e6e37a3dea728e5f232e41696ad286bcca9201be").unwrap());
+        assert_eq!(v, hex::decode("58698724bb2420d15c4fb2911ae1337f102bcaf4c0088d36345b88b243968e834c5ffa17907832017114405792dad96085b6076b8e4e63b578c90d0336bcaadef4f24704df866149526a1e6d23f89e218ad3f6172a7e26e6e37a3dea728e5f232e41696ad286bcca9201be").unwrap());
         assert_eq!(vlad, serde_cbor::from_slice(&v).unwrap());
     }
 
@@ -468,7 +468,7 @@ mod tests {
         assert_tokens(
             &v.compact(),
             &[
-                Token::BorrowedBytes(&[0x07, 0x3b, 0x00, 0x01, 0x00, 0x00, 0x00]),
+                Token::BorrowedBytes(&[135, 36, 187, 36, 0, 1, 0, 0, 0]),
             ]
         );
     }
@@ -510,7 +510,7 @@ mod tests {
         assert_tokens(
             &v.readable(),
             &[
-                Token::BorrowedStr("ba45qaaiaaaaa"),
+                Token::BorrowedStr("bq4slwjaaaeaaaaa"),
             ]
         );
     }
