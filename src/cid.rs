@@ -66,18 +66,18 @@ impl EncodingInfo for Cid {
     }
 }
 
-impl Into<Vec<u8>> for Cid {
-    fn into(self) -> Vec<u8> {
+impl From<Cid> for Vec<u8> {
+    fn from(cid: Cid) -> Self {
         let mut v = Vec::default();
         // if we're not a v0 Cid, add in the version and the encoding codec
-        if self.codec() != Codec::Identity {
+        if cid.codec() != Codec::Identity {
             // add in the Cid codec
-            v.append(&mut self.codec.clone().into());
+            v.append(&mut cid.codec.into());
             // add in the target encoding codec
-            v.append(&mut self.target_codec.clone().into());
+            v.append(&mut cid.target_codec.into());
         }
         // add in the multihash data
-        v.append(&mut self.hash.clone().into());
+        v.append(&mut cid.hash.into());
         v
     }
 }
@@ -211,14 +211,14 @@ impl Builder {
         }
         Ok(EncodedCid::new(
             self.base_encoding
-                .unwrap_or_else(|| Cid::preferred_encoding()),
+                .unwrap_or_else(Cid::preferred_encoding),
             self.try_build()?,
         ))
     }
 
     /// build the cid
     pub fn try_build(&self) -> Result<Cid, Error> {
-        if let Some(codec) = self.codec.clone() {
+        if let Some(codec) = self.codec {
             // build a v1 or later Cid
             Ok(Cid {
                 codec,

@@ -17,7 +17,7 @@ impl<'de> Deserialize<'de> for Cid {
     where
         D: Deserializer<'de>,
     {
-        const FIELDS: &'static [&'static str] = &["version", "encoding", "hash"];
+        const FIELDS: &[&str] = &["version", "encoding", "hash"];
 
         #[derive(Deserialize)]
         #[serde(field_identifier, rename_all = "lowercase")]
@@ -131,7 +131,7 @@ impl<'de> Deserialize<'de> for Vlad {
     where
         D: Deserializer<'de>,
     {
-        const FIELDS: &'static [&'static str] = &["nonce", "cid"];
+        const FIELDS: &[&str] = &["nonce", "cid"];
 
         #[derive(Deserialize)]
         #[serde(field_identifier, rename_all = "lowercase")]

@@ -1,6 +1,6 @@
 // SPDX-License-Idnetifier: Apache-2.0
 
-//!
+//! multicid
 #![warn(missing_docs)]
 #![deny(
     trivial_casts,

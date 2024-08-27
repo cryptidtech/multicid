@@ -72,15 +72,15 @@ impl EncodingInfo for Vlad {
     }
 }
 
-impl Into<Vec<u8>> for Vlad {
-    fn into(self) -> Vec<u8> {
+impl From<Vlad> for Vec<u8> {
+    fn from(vlad: Vlad) -> Vec<u8> {
         let mut v = Vec::default();
         // add the sigil
         v.append(&mut SIGIL.into());
         // add the nonce
-        v.append(&mut self.nonce.clone().into());
+        v.append(&mut vlad.nonce.into());
         // add the cid
-        v.append(&mut self.cid.clone().into());
+        v.append(&mut vlad.cid.into());
         v
     }
 }
@@ -168,7 +168,7 @@ impl Builder {
     pub fn try_build_encoded(&self) -> Result<EncodedVlad, Error> {
         Ok(EncodedVlad::new(
             self.base_encoding
-                .unwrap_or_else(|| Vlad::preferred_encoding()),
+                .unwrap_or_else(Vlad::preferred_encoding),
             self.try_build()?,
         ))
     }
