@@ -8,16 +8,20 @@ use multisig::Multisig;
 use multitrait::{Null, TryDecodeFrom};
 use multiutil::{BaseEncoded, CodecInfo, DetectedEncoder, EncodingInfo};
 
-/// the Vlad multicodec sigil
+/// The Vlad multicodec sigil
 pub const SIGIL: Codec = Codec::Vlad;
 
-/// a multibase encoded Vlad that can decode from any number of encoding but always encodes to
+/// A multibase encoded Vlad.
+///
+/// Can decode from any number of encodings but always encodes to
 /// Vlad's preferred Base32Lower multibase encoding (i.e. liberal in what we except, strict in what
 /// we generate)
 pub type EncodedVlad = BaseEncoded<Vlad, DetectedEncoder>;
 
-/// A verifiable long-lived address (VLAD) represents an identifier for loosely coupled distributed
-/// systems that combines a random unique idenitfier (none) with the content address of a
+/// A verifiable long-lived address (VLAD).
+///
+/// A VLAD represents an identifier for loosely coupled distributed
+/// systems that combines a random unique idenitfier (nonce) with the content address of a
 /// verification function in executable format.
 ///
 /// The goal is to avoid the anti-pattern of using public keys as identifiers. Public keys are
@@ -40,7 +44,7 @@ pub struct Vlad {
 }
 
 impl Vlad {
-    /// verify a Vlad whose nonce is a digital signature over the Cid
+    /// Verify a Vlad whose nonce is a digital signature over the Cid
     pub fn verify(&self, mk: &Multikey) -> Result<(), Error> {
         let vv = mk.verify_view()?;
         let cidv: Vec<u8> = self.cid.clone().into();
@@ -167,8 +171,7 @@ impl Builder {
     /// build a base encoded vlad
     pub fn try_build_encoded(&self) -> Result<EncodedVlad, Error> {
         Ok(EncodedVlad::new(
-            self.base_encoding
-                .unwrap_or_else(Vlad::preferred_encoding),
+            self.base_encoding.unwrap_or_else(Vlad::preferred_encoding),
             self.try_build()?,
         ))
     }
@@ -207,7 +210,7 @@ mod tests {
     #[test]
     fn test_default() {
         // build a nonce
-        let mut rng = rand::rngs::OsRng::default();
+        let mut rng = rand::rngs::OsRng;
         let nonce = nonce::Builder::new_from_random_bytes(32, &mut rng)
             .try_build()
             .unwrap();
@@ -236,7 +239,7 @@ mod tests {
     #[test]
     fn test_binary_roundtrip() {
         // build a nonce
-        let mut rng = rand::rngs::OsRng::default();
+        let mut rng = rand::rngs::OsRng;
         let nonce = nonce::Builder::new_from_random_bytes(32, &mut rng)
             .try_build()
             .unwrap();
@@ -267,7 +270,7 @@ mod tests {
     #[test]
     fn test_encoded_roundtrip() {
         // build a nonce
-        let mut rng = rand::rngs::OsRng::default();
+        let mut rng = rand::rngs::OsRng;
         let nonce = nonce::Builder::new_from_random_bytes(32, &mut rng)
             .try_build()
             .unwrap();
@@ -298,7 +301,7 @@ mod tests {
     #[test]
     fn test_encodings_roundtrip() {
         // build a nonce
-        let mut rng = rand::rngs::OsRng::default();
+        let mut rng = rand::rngs::OsRng;
         let nonce = nonce::Builder::new_from_random_bytes(32, &mut rng)
             .try_build()
             .unwrap();
@@ -316,9 +319,9 @@ mod tests {
             .unwrap();
 
         // start at Identity so we skip it
-        let mut itr: BaseIter = Base::Identity.into();
+        let itr: BaseIter = Base::Identity.into();
 
-        while let Some(encoding) = itr.next() {
+        for encoding in itr {
             //print!("{}...", base_name(encoding));
             let vlad = Builder::default()
                 .with_nonce(&nonce)
@@ -389,7 +392,7 @@ mod tests {
             .unwrap();
 
         // make sure the signature checks out
-        assert_eq!((), vlad.verify(&mk).unwrap());
+        assert!(vlad.verify(&mk).is_ok());
         let s = vlad.to_string();
         //println!("BASE32Z ({}) {}", s.len(), s);
         let de = EncodedVlad::try_from(s.as_str()).unwrap();
