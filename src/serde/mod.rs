@@ -47,17 +47,25 @@ mod tests {
         assert_tokens(
             &v0.readable(),
             &[
-                Token::Struct { name: "cid", len: 3, },
+                Token::Struct {
+                    name: "cid",
+                    len: 3,
+                },
                 Token::BorrowedStr("version"),
                 Token::U64(0),
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("dag-pb"),
                 Token::BorrowedStr("hash"),
-                Token::Struct { name: "multihash", len: 2, },
+                Token::Struct {
+                    name: "multihash",
+                    len: 2,
+                },
                 Token::BorrowedStr("codec"),
                 Token::BorrowedStr("sha2-256"),
                 Token::BorrowedStr("hash"),
-                Token::BorrowedStr("f20e28c7aeb3a876b25ed822472e47a696fe25214c1672f0972195f9b64eea41e7e"),
+                Token::BorrowedStr(
+                    "f20e28c7aeb3a876b25ed822472e47a696fe25214c1672f0972195f9b64eea41e7e",
+                ),
                 Token::StructEnd,
                 Token::StructEnd,
             ],
@@ -420,12 +428,7 @@ mod tests {
     #[test]
     fn test_null_cid_serde_compact() {
         let c = cid::Cid::null();
-        assert_tokens(
-            &c.compact(),
-            &[
-                Token::BorrowedBytes(&[1, 0, 0, 0])
-            ]
-        );
+        assert_tokens(&c.compact(), &[Token::BorrowedBytes(&[1, 0, 0, 0])]);
     }
 
     #[test]
@@ -434,32 +437,33 @@ mod tests {
         assert_tokens(
             &c.readable(),
             &[
-                Token::Struct { name: "cid", len: 3, },
+                Token::Struct {
+                    name: "cid",
+                    len: 3,
+                },
                 Token::BorrowedStr("version"),
                 Token::U64(1),
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("identity"),
                 Token::BorrowedStr("hash"),
-                Token::Struct { name: "multihash", len: 2, },
+                Token::Struct {
+                    name: "multihash",
+                    len: 2,
+                },
                 Token::BorrowedStr("codec"),
                 Token::BorrowedStr("identity"),
                 Token::BorrowedStr("hash"),
                 Token::BorrowedStr("f00"),
                 Token::StructEnd,
                 Token::StructEnd,
-            ]
+            ],
         );
     }
 
     #[test]
     fn test_encoded_null_cid_serde_readable() {
         let c: cid::EncodedCid = cid::Cid::null().into();
-        assert_tokens(
-            &c.readable(),
-            &[
-                Token::BorrowedStr("z2UzHM"),
-            ]
-        );
+        assert_tokens(&c.readable(), &[Token::BorrowedStr("z2UzHM")]);
     }
 
     #[test]
@@ -467,9 +471,7 @@ mod tests {
         let v = vlad::Vlad::null();
         assert_tokens(
             &v.compact(),
-            &[
-                Token::BorrowedBytes(&[135, 36, 187, 36, 0, 1, 0, 0, 0]),
-            ]
+            &[Token::BorrowedBytes(&[135, 36, 187, 36, 0, 1, 0, 0, 0])],
         );
     }
 
@@ -479,20 +481,32 @@ mod tests {
         assert_tokens(
             &v.readable(),
             &[
-                Token::Struct { name: "vlad", len: 2, },
+                Token::Struct {
+                    name: "vlad",
+                    len: 2,
+                },
                 Token::BorrowedStr("nonce"),
-                Token::Struct { name: "nonce", len: 1, },
+                Token::Struct {
+                    name: "nonce",
+                    len: 1,
+                },
                 Token::BorrowedStr("nonce"),
                 Token::BorrowedStr("f00"),
                 Token::StructEnd,
                 Token::BorrowedStr("cid"),
-                Token::Struct { name: "cid", len: 3, },
+                Token::Struct {
+                    name: "cid",
+                    len: 3,
+                },
                 Token::BorrowedStr("version"),
                 Token::U64(1),
                 Token::BorrowedStr("encoding"),
                 Token::BorrowedStr("identity"),
                 Token::BorrowedStr("hash"),
-                Token::Struct { name: "multihash", len: 2, },
+                Token::Struct {
+                    name: "multihash",
+                    len: 2,
+                },
                 Token::BorrowedStr("codec"),
                 Token::BorrowedStr("identity"),
                 Token::BorrowedStr("hash"),
@@ -500,18 +514,13 @@ mod tests {
                 Token::StructEnd,
                 Token::StructEnd,
                 Token::StructEnd,
-            ]
+            ],
         );
     }
 
     #[test]
     fn test_encoded_null_vlad_serde_readable() {
         let v: vlad::EncodedVlad = vlad::Vlad::null().into();
-        assert_tokens(
-            &v.readable(),
-            &[
-                Token::BorrowedStr("bq4slwjaaaeaaaaa"),
-            ]
-        );
+        assert_tokens(&v.readable(), &[Token::BorrowedStr("bq4slwjaaaeaaaaa")]);
     }
 }
