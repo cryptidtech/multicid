@@ -261,7 +261,7 @@ mod tests {
         let vlad = vlad::Builder::default()
             .with_nonce(&nonce)
             .with_cid(&cid)
-            .try_build_encoded()
+            .try_build_encoded(|cid| Ok(cid.clone().into()))
             .unwrap();
 
         assert_tokens(
@@ -292,7 +292,7 @@ mod tests {
         let vlad = vlad::Builder::default()
             .with_nonce(&nonce)
             .with_cid(&cid)
-            .try_build()
+            .try_build(|cid| Ok(cid.clone().into()))
             .unwrap();
 
         assert_tokens(
@@ -355,7 +355,7 @@ mod tests {
         let vlad = vlad::Builder::default()
             .with_nonce(&nonce)
             .with_cid(&cid)
-            .try_build()
+            .try_build(|cid| Ok(cid.clone().into()))
             .unwrap();
 
         let s = serde_json::to_string(&vlad).unwrap();
@@ -385,7 +385,7 @@ mod tests {
         let vlad = vlad::Builder::default()
             .with_nonce(&nonce)
             .with_cid(&cid)
-            .try_build()
+            .try_build(|cid| Ok(cid.clone().into()))
             .unwrap();
 
         let v = serde_cbor::to_vec(&vlad).unwrap();
@@ -416,7 +416,7 @@ mod tests {
         let vlad = vlad::Builder::default()
             .with_nonce(&nonce)
             .with_cid(&cid)
-            .try_build()
+            .try_build(|cid| Ok(cid.clone().into()))
             .unwrap();
 
         let v = serde_cbor::to_vec(&vlad).unwrap();

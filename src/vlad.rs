@@ -138,7 +138,6 @@ impl fmt::Debug for Vlad {
 #[derive(Clone, Debug, Default)]
 pub struct Builder {
     nonce: Option<Nonce>,
-    mk: Option<Multikey>,
     cid: Option<Cid>,
     base_encoding: Option<Base>,
 }
@@ -156,12 +155,6 @@ impl Builder {
         self
     }
 
-    /// set the signing key to generate a signature nonce
-    pub fn with_signing_key(mut self, mk: &Multikey) -> Self {
-        self.mk = Some(mk.clone());
-        self
-    }
-
     /// set the base encoding codec
     pub fn with_base_encoding(mut self, base: Base) -> Self {
         self.base_encoding = Some(base);
@@ -169,32 +162,33 @@ impl Builder {
     }
 
     /// build a base encoded vlad
-    pub fn try_build_encoded(&self) -> Result<EncodedVlad, Error> {
+    pub fn try_build_encoded(
+        &self,
+        gen_proof: impl FnMut(&Cid) -> Result<Vec<u8>, Error>,
+    ) -> Result<EncodedVlad, Error> {
         Ok(EncodedVlad::new(
             self.base_encoding.unwrap_or_else(Vlad::preferred_encoding),
-            self.try_build()?,
+            self.try_build(gen_proof)?,
         ))
     }
 
     /// build the vlad
-    pub fn try_build(&self) -> Result<Vlad, Error> {
+    pub fn try_build(
+        &self,
+        mut gen_proof: impl FnMut(&Cid) -> Result<Vec<u8>, Error>,
+    ) -> Result<Vlad, Error> {
         let cid = self.cid.clone().ok_or(VladError::MissingCid)?;
         match &self.nonce {
             Some(nonce) => Ok(Vlad {
                 nonce: nonce.clone(),
                 cid,
             }),
-            None => match &self.mk {
-                Some(mk) => {
-                    let sv = mk.sign_view()?;
-                    let cidv: Vec<u8> = cid.clone().into();
-                    let ms = sv.sign(&cidv, false, None)?;
-                    let msv: Vec<u8> = ms.clone().into();
-                    let nonce = nonce::Builder::new_from_bytes(&msv).try_build()?;
-                    Ok(Vlad { nonce, cid })
-                }
-                None => Err(VladError::MissingNonce.into()),
-            },
+            None => {
+                let msv = gen_proof(&cid)?;
+                let nonce = nonce::Builder::new_from_bytes(&msv).try_build()?;
+
+                Ok(Vlad { nonce, cid })
+            }
         }
     }
 }
@@ -230,7 +224,11 @@ mod tests {
         let vlad = Builder::default()
             .with_nonce(&nonce)
             .with_cid(&cid)
-            .try_build()
+            .try_build(|cid| {
+                // sign those bytes
+                let v: Vec<u8> = cid.clone().into();
+                Ok(v)
+            })
             .unwrap();
 
         assert_eq!(Codec::Vlad, vlad.codec());
@@ -259,7 +257,11 @@ mod tests {
         let vlad = Builder::default()
             .with_nonce(&nonce)
             .with_cid(&cid)
-            .try_build()
+            .try_build(|cid| {
+                // sign those bytes
+                let v: Vec<u8> = cid.clone().into();
+                Ok(v)
+            })
             .unwrap();
 
         let v: Vec<u8> = vlad.clone().into();
@@ -290,7 +292,11 @@ mod tests {
         let vlad = Builder::default()
             .with_nonce(&nonce)
             .with_cid(&cid)
-            .try_build_encoded()
+            .try_build_encoded(|cid| {
+                // sign those bytes
+                let v: Vec<u8> = cid.clone().into();
+                Ok(v)
+            })
             .unwrap();
 
         let s = vlad.to_string();
@@ -327,7 +333,11 @@ mod tests {
                 .with_nonce(&nonce)
                 .with_cid(&cid)
                 .with_base_encoding(encoding)
-                .try_build_encoded()
+                .try_build_encoded(|cid| {
+                    // sign those bytes
+                    let v: Vec<u8> = cid.clone().into();
+                    Ok(v)
+                })
                 .unwrap();
 
             let s = vlad.to_string();
@@ -385,10 +395,16 @@ mod tests {
         let mk = EncodedMultikey::try_from(s).unwrap();
 
         let vlad = Builder::default()
-            .with_signing_key(&mk)
             .with_cid(&cid)
             .with_base_encoding(Base::Base32Z)
-            .try_build_encoded()
+            .try_build_encoded(|cid| {
+                // use mk to sign those cid bytes
+                let signing_view = mk.sign_view()?;
+                let cidv: Vec<u8> = cid.clone().into();
+                let ms = signing_view.sign(&cidv, false, None)?;
+                let msv: Vec<u8> = ms.clone().into();
+                Ok(msv)
+            })
             .unwrap();
 
         // make sure the signature checks out
