@@ -8,16 +8,20 @@ use multisig::Multisig;
 use multitrait::{Null, TryDecodeFrom};
 use multiutil::{BaseEncoded, CodecInfo, DetectedEncoder, EncodingInfo};
 
-/// the Vlad multicodec sigil
+/// The Vlad multicodec sigil
 pub const SIGIL: Codec = Codec::Vlad;
 
-/// a multibase encoded Vlad that can decode from any number of encoding but always encodes to
+/// A multibase encoded Vlad.
+///
+/// Can decode from any number of encodings but always encodes to
 /// Vlad's preferred Base32Lower multibase encoding (i.e. liberal in what we except, strict in what
 /// we generate)
 pub type EncodedVlad = BaseEncoded<Vlad, DetectedEncoder>;
 
-/// A verifiable long-lived address (VLAD) represents an identifier for loosely coupled distributed
-/// systems that combines a random unique idenitfier (none) with the content address of a
+/// A verifiable long-lived address (VLAD).
+///
+/// A VLAD represents an identifier for loosely coupled distributed
+/// systems that combines a random unique idenitfier (nonce) with the content address of a
 /// verification function in executable format.
 ///
 /// The goal is to avoid the anti-pattern of using public keys as identifiers. Public keys are
@@ -40,7 +44,7 @@ pub struct Vlad {
 }
 
 impl Vlad {
-    /// verify a Vlad whose nonce is a digital signature over the Cid
+    /// Verify a Vlad whose nonce is a digital signature over the Cid
     pub fn verify(&self, mk: &Multikey) -> Result<(), Error> {
         let vv = mk.verify_view()?;
         let cidv: Vec<u8> = self.cid.clone().into();
